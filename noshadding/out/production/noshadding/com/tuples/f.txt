@@ -1,0 +1,123 @@
+package com.tuples;
+
+import java.util.*;
+import java.lang.*;
+import java.io.*;
+import static java.util.Collections.*;
+import static java.util.Arrays.*;
+public class Main{
+    BufferedReader br=new BufferedReader(new InputStreamReader(System.in));
+    int infinity=1<<28;
+    double efc=1e-9;
+    int n, m, k;
+    int[] x, y, a, b, c;
+    void dijmain(){
+        try{
+            String[] nmk=br.readLine().split(" ");
+            n=Integer.parseInt(nmk[0]);
+            m=Integer.parseInt(nmk[1]);
+            k=Integer.parseInt(nmk[2]);
+            x=new int[m];
+            y=new int[m];
+            for(int i=0; i<m; i++){
+                nmk=br.readLine().split(" ");
+                x[i]=Integer.parseInt(nmk[0])-1;
+                y[i]=Integer.parseInt(nmk[1])-1;
+            }
+            a=new int[k];
+            b=new int[k];
+            c=new int[k];
+            for(int i=0; i<k; i++){
+                nmk=br.readLine().split(" ");
+                a[i]=Integer.parseInt(nmk[0])-1;
+                b[i]=Integer.parseInt(nmk[1])-1;
+                c[i]=Integer.parseInt(nmk[2])-1;
+            }
+            dsol();
+        }catch(IOException e){}
+    }
+
+    void dsol(){
+        HashSet<Integer> set=new HashSet<Integer>();
+        for(int i=0; i<k; i++){
+            set.add( a[i]*n*n+b[i]*n+c[i]);
+        }
+        ArrayList<Integer>[] es=new ArrayList[n];
+        boolean[][] g=new boolean[n][n];
+        for(int i=0; i<n; i++){
+            es[i]=new ArrayList<Integer>();
+        }
+        for(int i=0; i<m; i++){
+            es[x[i]].add(y[i]);
+            es[y[i]].add(x[i]);
+            g[x[i]][y[i]]=g[y[i]][x[i]]=true;
+        }
+        int[][] d=new int[n][n];
+        int[][] pre=new int[n][n];
+        for(int i=0; i<n; i++){
+            fill(d[i], -1);
+            fill(pre[i], -1);
+        }
+
+        LinkedList<Integer> que=new LinkedList<Integer>();
+        que.offer(0);
+        d[0][0]=0;
+        for(; !que.isEmpty();){
+            int p=que.poll();
+            int i=p/n, j=p%n;
+            for(int k : es[j]){
+                int hash=i*n*n+j*n+k;
+                if(set.contains(hash)){
+                    continue;
+                }
+                if(d[j][k]==-1){
+                    d[j][k]=d[i][j]+1;
+                    pre[j][k]=i;
+                    que.offer(j*n+k);
+                }
+            }
+        }
+        int minI=-1, minJ=-1;
+        for(int i=0; i<n; i++){
+            for(int j=0; j<n; j++){
+                int hash=i*n*n+j*n+(n-1);
+                if(set.contains(hash)){
+                    continue;
+                }
+                if(d[i][j]>=0&&g[j][n-1]&&(minI==-1||d[i][j]<d[minI][minJ])){
+                    minI=i;
+                    minJ=j;
+                }
+            }
+        }
+        if(minI==-1){
+            System.out.println("-1");
+            return;
+        }
+        ArrayList<Integer> list=new ArrayList<Integer>();
+        list.add(n-1);
+        list.add(minJ);
+        for(int i=minI, j=minJ; i!=0||j!=0;){
+            list.add(i);
+            int h=pre[i][j];
+            j=i;
+            i=h;
+        }
+        StringBuilder sb=new StringBuilder();
+        sb.append(list.size()-1+"\n");
+        reverse(list);
+        for(int i=0; i<list.size(); i++){
+            sb.append(list.get(i)+1).append(i<list.size()-1?' ':'\n');
+        }
+        System.out.println(sb.toString());
+    }
+
+    int triplet(int a, int b, int c){
+        return a*n*n+b*n+c;
+    }
+
+    public static void main(String[] args){
+        Locale.setDefault(Locale.US);
+        new Main().dijmain();
+    }
+}
